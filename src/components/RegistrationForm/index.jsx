@@ -13,6 +13,8 @@ function RegistrationForm() {
     handleSubmit,
     reset,
     watch,
+    setError,
+    clearErrors,
     formState: { errors, isValid, isValidating },
   } = useForm({
     mode: 'onChange',
@@ -24,6 +26,7 @@ function RegistrationForm() {
   const checkUserName = async (newUsername) => {
     try {
       const response = await axios.get(USERS_URL);
+
       return response.data.some((user) => user.username === newUsername) ? 'Логин уже занят' : true;
     } catch (error) {
       return 'Ошибка проверки логина';
@@ -41,6 +44,18 @@ function RegistrationForm() {
     }
   };
 
+  useEffect(() => {
+    if (username && username.length >= 4) {
+      checkUserName(username).then((result) => {
+        if (result !== true) {
+          setError('username', { message: result });
+        } else {
+          clearErrors('username');
+        }
+      });
+    }
+  }, [username]);
+
   return (
     <>
       <h3>Регистрация</h3>
@@ -57,7 +72,6 @@ function RegistrationForm() {
               value: /^[A-Za-z0-9_]+$/,
               message: 'Только латиница, цифры и _',
             },
-            validate: checkUserName,
           })}
         />
         {errors.username && <span className={styles.error}>{errors.username.message}</span>}
@@ -110,8 +124,8 @@ function RegistrationForm() {
             required: 'Введите пароль',
             minLength: { value: 6, message: 'Минимум 6 символов' },
             validate: {
-              hasUpper: (v) => /[A-Z]/.test(v) || 'Нужна хотя бы одна заглавная буква',
-              hasDigit: (v) => /\d/.test(v) || 'Нужна хотя бы одна цифра',
+              hasUpper: (value) => /[A-Z]/.test(value) || 'Нужна хотя бы одна заглавная буква',
+              hasDigit: (value) => /\d/.test(value) || 'Нужна хотя бы одна цифра',
             },
           })}
         />
@@ -122,7 +136,7 @@ function RegistrationForm() {
           placeholder="Повторите пароль"
           {...register('confirmPassword', {
             required: 'Повторите пароль',
-            validate: (v) => v === password || 'Пароли не совпадают',
+            validate: (value) => value === password || 'Пароли не совпадают',
           })}
         />
         {errors.confirmPassword && (
