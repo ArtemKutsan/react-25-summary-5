@@ -1,4 +1,5 @@
 import './App.css';
+import RegistrationForm from './components/RegistrationForm';
 
 function App() {
   return (
@@ -9,6 +10,7 @@ function App() {
         <section>
           <div className="container">
             <h2>Задача 1: Асинхронная проверка при регистрации</h2>
+            <RegistrationForm />
           </div>
         </section>
       </main>
