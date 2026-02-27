@@ -3,6 +3,17 @@ import styles from './RegistrationForm.module.css';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
+import {
+  usernameRules,
+  emailRules,
+  firstNameRules,
+  lastNameRules,
+  passwordRules,
+  confirmPasswordRules,
+  ageRules,
+  phoneRules,
+  agreementRules,
+} from './validationRules';
 
 const API_BASE_URL = 'https://699eb24878dda56d396b04ab.mockapi.io/api/v1';
 const USERS_URL = `${API_BASE_URL}/users`;
@@ -45,7 +56,12 @@ function RegistrationForm() {
   };
 
   useEffect(() => {
-    if (username && username.length >= 4) {
+    if (!username || username.length < 4) {
+      clearErrors('username');
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
       checkUserName(username).then((result) => {
         if (result !== true) {
           setError('username', { message: result });
@@ -53,128 +69,48 @@ function RegistrationForm() {
           clearErrors('username');
         }
       });
-    }
-  }, [username]);
+    }, 400);
+
+    return () => clearTimeout(timeoutId);
+  }, [username, setError, clearErrors]);
 
   return (
     <>
       <h3>Регистрация</h3>
 
       <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
-        <input
-          type="text"
-          placeholder="Логин"
-          {...register('username', {
-            required: 'Введите логин',
-            minLength: { value: 4, message: 'Минимум 4 символа' },
-            maxLength: { value: 20, message: 'Максимум 20 символов' },
-            pattern: {
-              value: /^[A-Za-z0-9_]+$/,
-              message: 'Только латиница, цифры и _',
-            },
-          })}
-        />
+        <input type="text" placeholder="Логин" {...register('username', usernameRules)} />
         {errors.username && <span className={styles.error}>{errors.username.message}</span>}
 
-        <input
-          type="email"
-          placeholder="Email"
-          {...register('email', {
-            required: 'Введите email',
-            pattern: {
-              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-              message: 'Некорректный email',
-            },
-          })}
-        />
+        <input type="email" placeholder="Email" {...register('email', emailRules)} />
         {errors.email && <span className={styles.error}>{errors.email.message}</span>}
 
-        <input
-          type="text"
-          placeholder="Имя"
-          {...register('firstName', {
-            required: 'Введите имя',
-            minLength: { value: 2, message: 'Минимум 2 буквы' },
-            pattern: {
-              value: /^[A-Za-zА-Яа-яЁё]+$/,
-              message: 'Только буквы',
-            },
-          })}
-        />
+        <input type="text" placeholder="Имя" {...register('firstName', firstNameRules)} />
         {errors.firstName && <span className={styles.error}>{errors.firstName.message}</span>}
 
-        <input
-          type="text"
-          placeholder="Фамилия"
-          {...register('lastName', {
-            required: 'Введите фамилию',
-            minLength: { value: 2, message: 'Минимум 2 буквы' },
-            pattern: {
-              value: /^[A-Za-zА-Яа-яЁё]+$/,
-              message: 'Только буквы',
-            },
-          })}
-        />
+        <input type="text" placeholder="Фамилия" {...register('lastName', lastNameRules)} />
         {errors.lastName && <span className={styles.error}>{errors.lastName.message}</span>}
 
-        <input
-          type="password"
-          placeholder="Пароль"
-          {...register('password', {
-            required: 'Введите пароль',
-            minLength: { value: 6, message: 'Минимум 6 символов' },
-            validate: {
-              hasUpper: (value) => /[A-Z]/.test(value) || 'Нужна хотя бы одна заглавная буква',
-              hasDigit: (value) => /\d/.test(value) || 'Нужна хотя бы одна цифра',
-            },
-          })}
-        />
+        <input type="password" placeholder="Пароль" {...register('password', passwordRules)} />
         {errors.password && <span className={styles.error}>{errors.password.message}</span>}
 
         <input
           type="password"
           placeholder="Повторите пароль"
-          {...register('confirmPassword', {
-            required: 'Повторите пароль',
-            validate: (value) => value === password || 'Пароли не совпадают',
-          })}
+          {...register('confirmPassword', confirmPasswordRules(password))}
         />
         {errors.confirmPassword && (
           <span className={styles.error}>{errors.confirmPassword.message}</span>
         )}
 
-        <input
-          type="number"
-          placeholder="Возраст"
-          {...register('age', {
-            required: 'Введите возраст',
-            min: { value: 18, message: 'Минимум 18' },
-            max: { value: 100, message: 'Максимум 100' },
-          })}
-        />
+        <input type="number" placeholder="Возраст" {...register('age', ageRules)} />
         {errors.age && <span className={styles.error}>{errors.age.message}</span>}
 
-        <input
-          type="text"
-          placeholder="+65XXXXXX XX-XX"
-          {...register('phone', {
-            required: 'Введите телефон',
-            pattern: {
-              value: /^\+65\d{6}\s?\d{2}-\d{2}$/,
-              message: 'Формат: +65XXXXXX XX-XX',
-            },
-          })}
-        />
-        {errors.phone && <span>{errors.phone.message}</span>}
+        <input type="text" placeholder="+65XXXXXX XX-XX" {...register('phone', phoneRules)} />
+        {errors.phone && <span className={styles.error}>{errors.phone.message}</span>}
 
-        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <input
-            type="checkbox"
-            {...register('agreement', {
-              required: 'Необходимо согласие',
-            })}
-          />
-          Я согласен с правилами
+        <label className={styles.checkbox}>
+          <input type="checkbox" {...register('agreement', agreementRules)} />Я согласен с правилами
         </label>
         {errors.agreement && <span className={styles.error}>{errors.agreement.message}</span>}
 
