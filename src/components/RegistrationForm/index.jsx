@@ -56,7 +56,11 @@ function RegistrationForm() {
   };
 
   useEffect(() => {
-    if (!username || username.length < 4) {
+    if (
+      !username ||
+      username.length < usernameRules.minLength.value ||
+      username.length > usernameRules.maxLength.value
+    ) {
       clearErrors('username');
       return;
     }
@@ -109,7 +113,7 @@ function RegistrationForm() {
         <input type="text" placeholder="+65XXXXXX XX-XX" {...register('phone', phoneRules)} />
         {errors.phone && <span className={styles.error}>{errors.phone.message}</span>}
 
-        <label className={styles.checkbox}>
+        <label className={styles.agreement}>
           <input type="checkbox" {...register('agreement', agreementRules)} />Я согласен с правилами
         </label>
         {errors.agreement && <span className={styles.error}>{errors.agreement.message}</span>}
